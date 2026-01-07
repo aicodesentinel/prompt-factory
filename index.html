@@ -1,947 +1,311 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AI Code Sentinel — Prompt Factory</title>
-  <meta name="description" content="Prompt Factory personal: Protocolo → Brief Operativo → Super Prompts (3 variantes) + opción de generar código base." />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>AI Code Sentinel — Prompt Factory (Rescue)</title>
+  <meta name="description" content="Generador de prompts (MASTER y META) en un solo archivo. Rescue build."/>
   <style>
     :root{
-      --bg:#0b1220;
-      --panel:#0f1b33;
-      --panel2:#0c1730;
-      --border:rgba(255,255,255,.10);
-      --text:rgba(255,255,255,.92);
-      --muted:rgba(255,255,255,.68);
-      --muted2:rgba(255,255,255,.45);
-      --accent:#57d3ff;
-      --accent2:#6c8cff;
-      --good:#37d67a;
-      --warn:#ffcc66;
-      --bad:#ff6b6b;
-      --shadow:0 10px 30px rgba(0,0,0,.45);
-      --radius:16px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      --bg:#0b1220; --panel:#0f1b33; --border:rgba(255,255,255,.12);
+      --text:rgba(255,255,255,.92); --muted:rgba(255,255,255,.65);
+      --accent:#57d3ff; --accent2:#6c8cff; --shadow:0 12px 28px rgba(0,0,0,.45);
+      --r:16px; --mono: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      --sans: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
     }
     *{box-sizing:border-box}
     body{
-      margin:0;
-      font-family:var(--sans);
-      color:var(--text);
+      margin:0; font-family:var(--sans); color:var(--text);
       background:
         radial-gradient(1200px 600px at 10% 0%, rgba(87,211,255,.14), transparent 60%),
         radial-gradient(1000px 500px at 100% 10%, rgba(108,140,255,.12), transparent 55%),
-        radial-gradient(900px 700px at 60% 100%, rgba(55,214,122,.10), transparent 60%),
         var(--bg);
-      min-height:100vh;
-      padding:22px;
+      padding:18px;
     }
-    .wrap{max-width:1220px;margin:0 auto}
-    .topbar{
-      display:flex; align-items:center; justify-content:space-between;
-      gap:12px; padding:14px 16px; border:1px solid var(--border);
+    .wrap{max-width:1200px;margin:0 auto}
+    .top{
+      display:flex;justify-content:space-between;align-items:center;gap:12px;
+      padding:14px 16px;border:1px solid var(--border);border-radius:var(--r);
       background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border-radius:var(--radius); box-shadow:var(--shadow);
+      box-shadow:var(--shadow);
     }
-    .brand{display:flex; align-items:center; gap:12px}
+    .brand{display:flex;align-items:center;gap:12px}
     .logo{
-      width:42px;height:42px;border-radius:12px;
+      width:40px;height:40px;border-radius:12px;
       background:radial-gradient(circle at 30% 30%, #7ef3ff, #2b77ff 65%, #152049);
-      box-shadow:0 10px 24px rgba(87,211,255,.18);
       border:1px solid rgba(255,255,255,.18);
-      flex:0 0 auto;
-      background-size:cover;
-      background-position:center;
+      box-shadow:0 10px 24px rgba(87,211,255,.18);
     }
-    .btitles h1{font-size:13px;letter-spacing:.14em;margin:0;text-transform:uppercase}
-    .btitles p{margin:2px 0 0 0;font-size:12px;color:var(--muted)}
-    .status{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end}
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 10px; border:1px solid var(--border);
-      border-radius:999px; background:rgba(255,255,255,.04);
-      font-size:12px; color:var(--muted);
-    }
-    .dot{width:10px;height:10px;border-radius:50%; background:var(--good); box-shadow:0 0 0 4px rgba(55,214,122,.12)}
-    .ver{font-family:var(--mono); font-size:12px; color:rgba(255,255,255,.78)}
-    .grid{display:grid; grid-template-columns: 1.05fr .95fr; gap:14px; margin-top:14px}
-    @media (max-width: 980px){ .grid{grid-template-columns:1fr} }
+    h1{margin:0;font-size:14px;letter-spacing:.12em;text-transform:uppercase}
+    .sub{margin:3px 0 0 0;color:var(--muted);font-size:12px}
+    .pill{padding:7px 10px;border:1px solid var(--border);border-radius:999px;background:rgba(255,255,255,.04);font-size:12px;color:var(--muted)}
+    .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:14px;margin-top:14px}
+    @media(max-width:980px){.grid{grid-template-columns:1fr}}
     .card{
-      border:1px solid var(--border);
+      border:1px solid var(--border);border-radius:var(--r);overflow:hidden;
       background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-      border-radius:var(--radius);
       box-shadow:var(--shadow);
-      overflow:hidden;
     }
-    .cardhead{
-      padding:14px 16px; border-bottom:1px solid var(--border);
-      display:flex; align-items:center; justify-content:space-between; gap:12px;
-    }
-    .cardhead .title{font-size:14px; font-weight:800}
-    .cardhead .sub{font-size:12px;color:var(--muted); margin-top:2px}
-    .headleft{display:flex; flex-direction:column}
-    .btn{
-      border:1px solid var(--border);
-      background:rgba(255,255,255,.04);
-      color:rgba(255,255,255,.88);
-      padding:8px 12px; border-radius:999px;
-      font-weight:800; font-size:12px; cursor:pointer;
-      transition:.15s transform, .15s background, .15s border-color;
-      user-select:none;
-    }
-    .btn:hover{transform:translateY(-1px); background:rgba(255,255,255,.07)}
-    .btn.active{
-      border-color:rgba(87,211,255,.55);
-      background:rgba(87,211,255,.12);
-      color:#eaffff;
-      box-shadow:0 8px 18px rgba(87,211,255,.12);
-    }
-    .btn.ghost{
-      border-color:rgba(255,255,255,.14);
-      background:rgba(255,255,255,.03);
-      font-weight:700;
-    }
+    .head{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+    .head b{font-size:14px}
     .content{padding:14px 16px}
-    .hint{
-      padding:10px 12px; border:1px dashed rgba(255,255,255,.16);
-      border-radius:12px; color:var(--muted); font-size:12px;
-      background:rgba(0,0,0,.10);
-      margin-bottom:12px;
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    input,select,textarea{
+      width:100%;padding:10px 10px;border-radius:12px;
+      border:1px solid rgba(255,255,255,.14);background:rgba(10,18,34,.55);
+      color:rgba(255,255,255,.92);outline:none;
     }
-    .formgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
-    @media (max-width: 780px){ .formgrid{grid-template-columns:1fr} }
-    label{display:block; font-size:12px; color:var(--muted); margin-bottom:6px}
-    select,input,textarea{
-      width:100%;
-      padding:10px 10px;
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(10,18,34,.55);
-      color:rgba(255,255,255,.92);
-      outline:none;
+    textarea{min-height:84px;resize:vertical}
+    .form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(max-width:780px){.form{grid-template-columns:1fr}}
+    .row2{grid-column:1/-1}
+    .modes{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{
+      border:1px solid var(--border);background:rgba(255,255,255,.04);color:rgba(255,255,255,.88);
+      padding:8px 12px;border-radius:999px;font-weight:800;font-size:12px;cursor:pointer;
     }
-    textarea{min-height:86px; resize:vertical}
-    .field{display:flex; flex-direction:column}
-    .row2{grid-column:1 / -1}
-    .mini{font-size:11px; color:var(--muted2); margin-top:6px}
-    .toggles{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
-    .check{
-      display:flex; align-items:flex-start; gap:10px;
-      padding:10px 10px; border:1px solid rgba(255,255,255,.12);
-      background:rgba(255,255,255,.03); border-radius:12px;
-      flex:1 1 230px;
-    }
-    .check input{width:auto; margin-top:2px}
-    .check b{display:block; font-size:12px}
-    .check span{display:block; font-size:11px; color:var(--muted)}
-    .actions{
-      display:flex; gap:10px; flex-wrap:wrap; margin-top:12px
-    }
+    .btn.active{border-color:rgba(87,211,255,.55);background:rgba(87,211,255,.12)}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
     .action{
-      border:1px solid rgba(87,211,255,.35);
-      background:rgba(87,211,255,.12);
-      color:#eaffff;
-      padding:10px 12px; border-radius:12px;
-      font-weight:900; font-size:12px; cursor:pointer;
+      border:1px solid rgba(87,211,255,.35);background:rgba(87,211,255,.12);
+      color:#eaffff;padding:10px 12px;border-radius:12px;font-weight:900;font-size:12px;cursor:pointer;
     }
-    .action.secondary{
-      border-color:rgba(255,255,255,.16);
-      background:rgba(255,255,255,.04);
-      color:rgba(255,255,255,.86);
-      font-weight:800;
-    }
-    .outhead{
-      display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
-      padding:14px 16px; border-bottom:1px solid var(--border);
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-    }
-    .outhead .t{font-weight:900}
-    .outhead .s{font-size:12px;color:var(--muted)}
-    .outactions{display:flex; gap:8px; flex-wrap:wrap}
-    .chip{
-      padding:8px 10px; border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.03);
-      color:rgba(255,255,255,.86);
-      font-size:12px; cursor:pointer;
-    }
-    .chip.primary{
-      border-color:rgba(87,211,255,.35);
-      background:rgba(87,211,255,.10);
-    }
-    .output{padding:14px 16px}
-    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-    .tab{
-      padding:8px 10px;border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background:rgba(255,255,255,.03);
-      font-size:12px; cursor:pointer; user-select:none;
-    }
-    .tab.active{border-color:rgba(108,140,255,.45); background:rgba(108,140,255,.12)}
+    .action.secondary{border-color:rgba(255,255,255,.16);background:rgba(255,255,255,.04);font-weight:800;color:rgba(255,255,255,.86)}
     pre{
-      margin:0;
-      padding:14px;
-      border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(0,0,0,.20);
-      overflow:auto;
-      font-family:var(--mono);
-      font-size:12px;
-      line-height:1.45;
-      white-space:pre-wrap;
-      word-break:break-word;
+      margin:0;padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,.12);
+      background:rgba(0,0,0,.20);overflow:auto;font-family:var(--mono);font-size:12px;line-height:1.45;white-space:pre-wrap;word-break:break-word;
     }
-    .bot{
-      position:fixed;
-      right:18px; bottom:18px;
-      padding:10px 12px; border-radius:999px;
-      border:1px solid rgba(87,211,255,.35);
-      background:rgba(87,211,255,.12);
-      color:#eaffff;
-      font-weight:900;
-      cursor:pointer;
-      box-shadow:var(--shadow);
-      user-select:none;
-    }
-    dialog{
-      width:min(920px, 94vw);
-      border:none;
-      border-radius:18px;
-      padding:0;
-      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      color:var(--text);
-      border:1px solid rgba(255,255,255,.16);
-      box-shadow:var(--shadow);
-    }
-    dialog::backdrop{background:rgba(0,0,0,.6)}
-    .modalhead{
-      padding:14px 16px; border-bottom:1px solid rgba(255,255,255,.12);
-      display:flex; align-items:center; justify-content:space-between;
-    }
-    .modalhead b{font-size:14px}
-    .modalbody{padding:14px 16px}
-    .close{cursor:pointer; padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.04); color:rgba(255,255,255,.88); font-weight:900}
-    .small{font-size:12px}
-    .muted{color:var(--muted)}
-    .good{color:var(--good)}
-    .warn{color:var(--warn)}
-    .bad{color:var(--bad)}
+    .hint{font-size:12px;color:var(--muted);margin-top:10px}
   </style>
 </head>
-
 <body>
-<div class="wrap">
-  <div class="topbar">
-    <div class="brand">
-      <div class="logo" id="logoBox" title="Logo"></div>
-      <div class="btitles">
-        <h1>AI CODE SENTINEL — PROMPT FACTORY</h1>
-        <p>Protocolo Auto · 3 super-prompts · opción de generar código base · 100% local</p>
-      </div>
-    </div>
-    <div class="status">
-      <span class="pill"><span class="dot"></span> Offline / Sin backend</span>
-      <span class="pill"><span class="ver" id="verTxt">v2.0</span></span>
-    </div>
-  </div>
-
-  <div class="grid">
-    <!-- LEFT -->
-    <div class="card">
-      <div class="cardhead">
-        <div class="headleft">
-          <div class="title">Entrada (brief del cliente)</div>
-          <div class="sub">El sistema lo normaliza → lo valida → y genera salida potente.</div>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
-          <button class="btn active" id="modeAuto">AUTO (Protocolo)</button>
-          <button class="btn ghost" id="modeManual">MANUAL</button>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <div class="logo"></div>
+        <div>
+          <h1>AI CODE SENTINEL — PROMPT FACTORY</h1>
+          <div class="sub">RESCUE BUILD: un solo archivo, botón Generar garantizado ✅</div>
         </div>
       </div>
+      <div class="pill" id="ver">v-rescue</div>
+    </div>
 
-      <div class="content">
-        <div class="hint">
-          <b>Cómo usar (rápido):</b> llena lo básico → marca módulos → pega tus notas avanzadas → <b>Generar</b> → copia el prompt y pégalo en tu IA.
-          <div class="mini">AUTO decide estrategia y evita el “ALTO”. Si falta algo, te da 3 preguntas o supuestos.</div>
+    <div class="grid">
+      <div class="card">
+        <div class="head">
+          <div>
+            <b>Entrada</b>
+            <div class="sub">Llena lo mínimo y genera MASTER o META.</div>
+          </div>
+          <div class="modes">
+            <button class="btn active" id="mMaster">MASTER</button>
+            <button class="btn" id="mMeta">META</button>
+          </div>
         </div>
 
-        <div class="formgrid">
-          <div class="field">
-            <label>Factory</label>
-            <select id="factory">
-              <option value="CODE">Código (web/apps)</option>
-              <option value="IMAGE">Imágenes</option>
-              <option value="VIDEO">Video</option>
-              <option value="WORKFLOW">Workflows (n8n/Make/Zapier)</option>
-              <option value="__custom__">Personalizado</option>
-            </select>
-            <input id="factory_custom" placeholder="Escribe tu factory..." style="display:none;margin-top:8px" />
-          </div>
+        <div class="content">
+          <div class="form">
+            <div>
+              <label>Factory</label>
+              <select id="factory">
+                <option value="CODE">Código (web/apps/backend)</option>
+                <option value="IMAGE">Imágenes</option>
+                <option value="VIDEO">Video</option>
+                <option value="WORKFLOW">Workflows</option>
+              </select>
+            </div>
+            <div>
+              <label>IA destino</label>
+              <select id="ia">
+                <option value="agnostico">Cualquier IA (agnóstico)</option>
+                <option value="chatgpt">ChatGPT</option>
+                <option value="claude">Claude</option>
+                <option value="gemini">Gemini</option>
+                <option value="copilot">Copilot</option>
+              </select>
+            </div>
 
-          <div class="field">
-            <label>IA destino</label>
-            <select id="iaTarget">
-              <option value="agnostico">Cualquier IA (agnóstico)</option>
-              <option value="chatgpt">ChatGPT</option>
-              <option value="claude">Claude</option>
-              <option value="gemini">Gemini</option>
-              <option value="copilot">Copilot (asistencia code)</option>
-              <option value="__custom__">Personalizado</option>
-            </select>
-            <input id="iaTarget_custom" placeholder="Escribe tu IA..." style="display:none;margin-top:8px" />
-          </div>
+            <div>
+              <label>Marca</label>
+              <input id="marca" value="García y Asociados"/>
+            </div>
+            <div>
+              <label>Ciudad</label>
+              <input id="ciudad" value="Ciudad Juárez"/>
+            </div>
 
-          <div class="field">
-            <label>Nicho / negocio</label>
-            <select id="nicho">
-              <option value="Abogados / legal">Abogados / legal</option>
-              <option value="Clínica / salud">Clínica / salud</option>
-              <option value="Restaurante / comida">Restaurante / comida</option>
-              <option value="Ecommerce / tienda">Ecommerce / tienda</option>
-              <option value="Servicios locales">Servicios locales</option>
-              <option value="SaaS / software">SaaS / software</option>
-              <option value="Educación / cursos">Educación / cursos</option>
-              <option value="__custom__">Personalizado</option>
-            </select>
-            <input id="nicho_custom" placeholder="Escribe tu nicho..." style="display:none;margin-top:8px" />
-          </div>
+            <div class="row2">
+              <label>Objetivo</label>
+              <input id="objetivo" value="Crear una landing para buffet de abogados que capte leads por WhatsApp"/>
+            </div>
 
-          <div class="field">
-            <label>Nivel</label>
-            <select id="nivel">
-              <option value="Demo">Demo</option>
-              <option value="MVP">MVP</option>
-              <option value="Pro">Pro</option>
-              <option value="Agencia">Agencia</option>
-              <option value="__custom__">Personalizado</option>
-            </select>
-            <input id="nivel_custom" placeholder="Escribe tu nivel..." style="display:none;margin-top:8px" />
-          </div>
+            <div>
+              <label>WhatsApp (sin +)</label>
+              <input id="wa" value="526568239431"/>
+            </div>
+            <div>
+              <label>Email</label>
+              <input id="email" value="eduardorodarteq@gmail.com"/>
+            </div>
 
-          <div class="field">
-            <label>Objetivo principal</label>
-            <select id="objetivo">
-              <option value="Captar leads">Captar leads</option>
-              <option value="Vender / cobrar">Vender / cobrar</option>
-              <option value="Reservas / citas">Reservas / citas</option>
-              <option value="Informar / autoridad">Informar / autoridad</option>
-              <option value="Soporte / atención">Soporte / atención</option>
-              <option value="__custom__">Personalizado</option>
-            </select>
-            <input id="objetivo_custom" placeholder="Escribe tu objetivo..." style="display:none;margin-top:8px" />
-          </div>
+            <div class="row2">
+              <label>Servicios (coma)</label>
+              <input id="servicios" value="Civil, Mercantil, Laboral"/>
+            </div>
 
-          <div class="field">
-            <label>Estilo visual / tono</label>
-            <select id="estilo">
-              <option value="Corporate premium">Corporate premium</option>
-              <option value="Minimal limpio">Minimal limpio</option>
-              <option value="Moderno tech">Moderno tech</option>
-              <option value="Elegante oscuro">Elegante oscuro</option>
-              <option value="Creativo / bold">Creativo / bold</option>
-              <option value="__custom__">Personalizado</option>
-            </select>
-            <input id="estilo_custom" placeholder="Escribe tu estilo..." style="display:none;margin-top:8px" />
-          </div>
-
-          <div class="field row2">
-            <label>Marca / proyecto</label>
-            <input id="marca" placeholder="Ej: García y Asociados" value="García y Asociados" />
-          </div>
-
-          <div class="field">
-            <label>Ciudad (opcional)</label>
-            <input id="ciudad" placeholder="Ej: Ciudad Juárez" value="Ciudad Juárez" />
-          </div>
-
-          <div class="field">
-            <label>WhatsApp (si aplica)</label>
-            <input id="wa" placeholder="Ej: 5216561234567" value="526568239431" />
-            <div class="mini">Sin +, sin espacios. (MX: 52 + 1 + número).</div>
-          </div>
-
-          <div class="field row2">
-            <label>Servicios / features (coma)</label>
-            <input id="servicios" placeholder="Ej: Civil, Mercantil, Laboral" value="Civil, Mercantil, Laboral" />
-          </div>
-
-          <div class="field row2">
-            <label>Restricciones duras (coma)</label>
-            <input id="restricciones" placeholder="Ej: sin backend, sin frameworks, 1 archivo, sin instalar" value="sin backend, sin frameworks, un solo archivo, sin instalar" />
-          </div>
-
-          <div class="field row2">
-            <label>Notas avanzadas (el “ingrediente secreto”)</label>
-            <textarea id="notas" placeholder="Ej: agregar música ambiental + locutor explicando, animaciones sutiles, copy directo, tono premium, evitar librerías, etc."></textarea>
-            <div class="mini">Esto se mete dentro del brief y dentro de los prompts (para que SÍ cambie el resultado).</div>
-          </div>
-
-          <div class="field row2">
-            <label>Módulos (si Factory=CODE)</label>
-            <div class="toggles">
-              <div class="check"><input type="checkbox" id="mWa" checked><div><b>WhatsApp flotante</b><span>con número editable</span></div></div>
-              <div class="check"><input type="checkbox" id="mForm" checked><div><b>Formulario</b><span>sin backend (mailto/whatsapp)</span></div></div>
-              <div class="check"><input type="checkbox" id="mAgenda"><div><b>Agenda</b><span>Calendly/Google Appointment</span></div></div>
-              <div class="check"><input type="checkbox" id="mSeo" checked><div><b>SEO básico</b><span>meta + OG + schema</span></div></div>
-              <div class="check"><input type="checkbox" id="mLegal" checked><div><b>Legal</b><span>privacidad/terminos/aviso</span></div></div>
-              <div class="check"><input type="checkbox" id="mAnim" checked><div><b>Animaciones</b><span>scroll reveal + hover suave</span></div></div>
-              <div class="check"><input type="checkbox" id="mMedia"><div><b>Media</b><span>música / assets</span></div></div>
-              <div class="check"><input type="checkbox" id="mExplainBot"><div><b>Bot guía</b><span>explicación dentro del sitio</span></div></div>
+            <div class="row2">
+              <label>Notas extra (para “música/locutor”, etc.)</label>
+              <textarea id="notas" placeholder="Ej: incluir audio opcional y texto de locutor de bienvenida..."></textarea>
             </div>
           </div>
 
-          <div class="field row2">
-            <label>Salida</label>
-            <select id="deliverMode">
-              <option value="PROMPT_ONLY">A) Solo prompts (3 variantes)</option>
-              <option value="PROMPT_PLUS_CODE">B) Prompts + código base (starter)</option>
-            </select>
-            <div class="mini">Si eliges B, te genero un “starter” para que la IA lo complete más rápido.</div>
+          <div class="actions">
+            <button class="action" id="gen">Generar</button>
+            <button class="action secondary" id="copy">Copiar</button>
+            <button class="action secondary" id="test">Test rápido</button>
           </div>
 
-        </div>
-
-        <div class="actions">
-          <button class="action" id="btnGen">Generar</button>
-          <button class="action secondary" id="btnSave">Guardar preset</button>
-          <button class="action secondary" id="btnLoad">Cargar preset</button>
-          <button class="action secondary" id="btnLogo">Poner logo</button>
-          <button class="action secondary" id="btnReset">Reset</button>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- RIGHT -->
-    <div class="card">
-      <div class="outhead">
-        <div>
-          <div class="t">Salida</div>
-          <div class="s" id="outSub">Genera para ver: Diagnóstico · Brief Operativo · Prompts · Código</div>
-        </div>
-        <div class="outactions">
-          <button class="chip primary" id="copyActive">Copiar tab</button>
-          <button class="chip" id="copyAll">Copiar todo</button>
-          <button class="chip" id="openGuide">Guía</button>
+          <div class="hint" id="hint"></div>
         </div>
       </div>
 
-      <div class="output">
-        <div class="tabs" id="tabs">
-          <div class="tab active" data-tab="diag">Diagnóstico</div>
-          <div class="tab" data-tab="brief">Brief Operativo</div>
-          <div class="tab" data-tab="p1">Prompt 1 (Compacto)</div>
-          <div class="tab" data-tab="p2">Prompt 2 (Agencia)</div>
-          <div class="tab" data-tab="p3">Prompt 3 (Creativo)</div>
-          <div class="tab" data-tab="code">Código (starter)</div>
+      <div class="card">
+        <div class="head">
+          <div>
+            <b>Salida</b>
+            <div class="sub" id="outSub">MASTER: 1 bloque listo para pegar.</div>
+          </div>
         </div>
-        <pre id="outPre">Haz clic en “Generar”.</pre>
+        <div class="content">
+          <pre id="out">Haz clic en “Generar”.</pre>
+        </div>
       </div>
     </div>
   </div>
-</div>
-
-<button class="bot" id="botBtn">Bot</button>
-
-<dialog id="dlgGuide">
-  <div class="modalhead">
-    <b>Guía rápida (sin perder tiempo)</b>
-    <button class="close" id="closeGuide">Cerrar</button>
-  </div>
-  <div class="modalbody">
-    <p class="small"><b>Tu flujo ganador:</b></p>
-    <ol class="small">
-      <li>Elige <b>AUTO</b>.</li>
-      <li>Llena: Factory, Nicho, Objetivo, Restricciones y Notas avanzadas.</li>
-      <li><b>Generar</b> → abre tab <b>Prompt 2 (Agencia)</b> y pégalo en tu IA.</li>
-      <li>Si la IA te devuelve algo flojo, añade 1 línea en Notas: “prohibido genérico, entrega checklist QA y pasos exactos”.</li>
-    </ol>
-    <p class="small"><b>Si quieres código:</b> cambia Salida a <b>Prompts + código base</b>. Copias el tab “Código (starter)” y se lo pegas a la IA junto con Prompt 2.</p>
-    <p class="small muted">Tip: tus <b>Notas avanzadas</b> son lo que más cambia el resultado (música, locutor, estilo, etc.).</p>
-  </div>
-</dialog>
-
-<dialog id="dlgBot">
-  <div class="modalhead">
-    <b>Bot (qué hace AUTO)</b>
-    <button class="close" id="closeBot">Cerrar</button>
-  </div>
-  <div class="modalbody">
-    <p class="small">
-      <b>AUTO</b> evalúa tu brief y decide:
-      <ul class="small">
-        <li><b>MASTER</b> si está claro y simple (te entrega prompt directo).</li>
-        <li><b>META</b> si hay riesgo/ambigüedad (te entrega prompt más estricto).</li>
-      </ul>
-      Si faltan datos críticos, te da <b>3 preguntas</b> o <b>supuestos</b> para avanzar sin bloquear.
-    </p>
-  </div>
-</dialog>
-
-<input id="logoFile" type="file" accept="image/*" style="display:none" />
 
 <script>
-  // ---------------- helpers ----------------
-  function $(id){ return document.getElementById(id); }
-
-  function valSelect(selectId){
-    const sel = $(selectId);
-    const custom = $(selectId + "_custom");
-    if(!sel) return "";
-    if(sel.value === "__custom__"){
-      return (custom?.value || "").trim() || "Personalizado (sin especificar)";
-    }
-    return sel.value;
-  }
-  function showCustom(selectId){
-    const sel = $(selectId);
-    const custom = $(selectId + "_custom");
-    if(!sel || !custom) return;
-    custom.style.display = (sel.value === "__custom__") ? "block" : "none";
-  }
-  function wireCustom(selectId){
-    const sel = $(selectId);
-    const custom = $(selectId + "_custom");
-    if(!sel || !custom) return;
-    sel.addEventListener("change", ()=> showCustom(selectId));
-    showCustom(selectId);
-  }
-  function yn(b){ return b ? "Sí" : "No"; }
-  function clean(s){ return String(s||"").replaceAll("\u0000","").trim(); }
-
-  // ---------------- state ----------------
-  const VERSION = "v2.0";
-  let MODE = "AUTO"; // AUTO | MANUAL
-  let ACTIVE_TAB = "diag";
-  const OUT = { diag:"", brief:"", p1:"", p2:"", p3:"", code:"", all:"" };
+(() => {
+  const $ = (id)=>document.getElementById(id);
+  let MODE = "MASTER";
+  const out = $("out");
+  const hint = $("hint");
 
   function setMode(m){
     MODE = m;
-    $("modeAuto").classList.toggle("active", m==="AUTO");
-    $("modeManual").classList.toggle("active", m==="MANUAL");
-    $("outSub").textContent = (m==="AUTO")
-      ? "AUTO: Diagnóstico → Brief Operativo → 3 prompts + (opcional) código"
-      : "MANUAL: genera prompts sin reglas de protocolo (menos estricto).";
+    $("mMaster").classList.toggle("active", m==="MASTER");
+    $("mMeta").classList.toggle("active", m==="META");
+    $("outSub").textContent = m==="MASTER"
+      ? "MASTER: 1 bloque listo para pegar."
+      : "META: meta-brief + meta-prompt (para fabricar master prompt).";
   }
 
-  function setTab(tab){
-    ACTIVE_TAB = tab;
-    document.querySelectorAll(".tab").forEach(t=>{
-      t.classList.toggle("active", t.dataset.tab === tab);
-    });
-    $("outPre").textContent = OUT[tab] || "—";
-  }
-
-  // ---------------- collect data ----------------
-  function getData(){
+  function data(){
     return {
-      version: VERSION,
-      mode: MODE,
-      factory: valSelect("factory"),
-      iaTarget: valSelect("iaTarget"),
-      nicho: valSelect("nicho"),
-      nivel: valSelect("nivel"),
-      objetivo: valSelect("objetivo"),
-      estilo: valSelect("estilo"),
-      marca: clean($("marca").value) || "(sin marca)",
-      ciudad: clean($("ciudad").value) || "(sin ciudad)",
-      wa: clean($("wa").value) || "(sin whatsapp)",
-      servicios: clean($("servicios").value) || "(sin lista)",
-      restricciones: clean($("restricciones").value) || "(sin restricciones)",
-      notas: clean($("notas").value) || "(sin notas)",
-      deliverMode: $("deliverMode").value,
-      modules: {
-        wa: $("mWa").checked,
-        form: $("mForm").checked,
-        agenda: $("mAgenda").checked,
-        seo: $("mSeo").checked,
-        legal: $("mLegal").checked,
-        anim: $("mAnim").checked,
-        media: $("mMedia").checked,
-        explainBot: $("mExplainBot").checked,
-      }
+      factory: $("factory").value,
+      ia: $("ia").value,
+      marca: $("marca").value.trim() || "(sin marca)",
+      ciudad: $("ciudad").value.trim() || "(sin ciudad)",
+      objetivo: $("objetivo").value.trim() || "(sin objetivo)",
+      wa: $("wa").value.trim() || "(sin whatsapp)",
+      email: $("email").value.trim() || "(sin email)",
+      servicios: $("servicios").value.trim() || "(sin servicios)",
+      notas: $("notas").value.trim() || "(sin notas)"
     };
   }
 
-  // ---------------- protocol (AUTO) ----------------
-  function diagnose(d){
-    const missing = [];
-    if(!d.factory || d.factory.includes("sin especificar")) missing.push("Factory");
-    if(!d.objetivo || d.objetivo.includes("sin especificar")) missing.push("Objetivo");
-    if(!d.restricciones || d.restricciones.includes("sin restricciones")) missing.push("Restricciones");
-    if(!d.marca || d.marca === "(sin marca)") missing.push("Marca/Proyecto");
+  function buildMaster(d){
+    return [
+`=== BRIEF ===
+Marca: ${d.marca}
+Ciudad: ${d.ciudad}
+Objetivo: ${d.objetivo}
+Servicios: ${d.servicios}
+WhatsApp: ${d.wa}
+Email: ${d.email}
+Notas: ${d.notas}
 
-    // Complexity heuristic
-    let complexity = "SIMPLE";
-    const modCount = Object.values(d.modules).filter(Boolean).length;
-    const longNotes = (d.notas && d.notas !== "(sin notas)" && d.notas.length > 90);
-    const isCode = String(d.factory).toUpperCase().includes("CODE");
-    if(modCount >= 6 || longNotes || (isCode && d.nivel === "Agencia")) complexity = "ALTA";
-    else if(modCount >= 4 || longNotes) complexity = "MEDIA";
+=== PROMPT MAESTRO ===
+Rol: Eres un diseñador + copywriter + front-end senior.
+Reglas:
+- Responde en español.
+- Sin backend, sin frameworks, un solo index.html (HTML+CSS+JS).
+- Estética premium (oscuro elegante, acentos sutiles).
+- Incluye: botón WhatsApp funcional (con mensaje prellenado), formulario (front-end), animaciones sutiles (scroll reveal), navegación suave.
+- Añade SEO básico (title/description/OG) y footer legal simple.
+- Entrega: SOLO el código completo del index.html y nada más.
 
-    let risk = "BAJO";
-    if(missing.length >= 2) risk = "ALTO";
-    else if(missing.length === 1 || complexity !== "SIMPLE") risk = "MEDIO";
-
-    // Strategy decision
-    let strategy = "MASTER";
-    if(risk === "ALTO" || complexity === "ALTA") strategy = "META";
-    else if(risk === "MEDIO" || complexity === "MEDIA") strategy = "MASTER_ESTRICTO";
-
-    const q = [];
-    if(missing.includes("Objetivo")) q.push("¿Qué acción real quieres lograr? (leads / ventas / reservas / autoridad)");
-    if(missing.includes("Marca/Proyecto")) q.push("¿Nombre final de la marca/proyecto?");
-    if(missing.includes("Restricciones")) q.push("¿Qué NO se puede usar? (backend/frameworks/instalar/pago)");
-    if(q.length > 3) q.length = 3;
-
-    const assumptions = [];
-    if(missing.includes("Objetivo")) assumptions.push("Asumo objetivo: captar leads.");
-    if(missing.includes("Restricciones")) assumptions.push("Asumo: sin backend, sin frameworks, 1 archivo si es web.");
-    if(missing.includes("Marca/Proyecto")) assumptions.push("Asumo marca: (la del campo).");
-
-    const diag = [];
-    diag.push("⛔ PROTOCOLO — DIAGNÓSTICO");
-    diag.push(`Versión: ${d.version} · Modo: ${d.mode}`);
-    diag.push(`Factory: ${d.factory} · IA: ${d.iaTarget}`);
-    diag.push("");
-    diag.push(`Claridad: ${missing.length === 0 ? "ALTA" : missing.length === 1 ? "MEDIA" : "BAJA"}`);
-    diag.push(`Complejidad: ${complexity}`);
-    diag.push(`Riesgo: ${risk}`);
-    diag.push(`Estrategia recomendada: ${strategy}`);
-    diag.push("");
-
-    if(missing.length){
-      diag.push("⚠ Huecos críticos detectados:");
-      missing.forEach(m=> diag.push(" - " + m));
-      diag.push("");
-      diag.push("✅ Para avanzar sin bloquear, elige una:");
-      diag.push("A) Responde estas 3 preguntas (máx):");
-      (q.length ? q : ["(No hay preguntas, solo completa campos)"]).forEach(x=> diag.push(" - " + x));
-      diag.push("");
-      diag.push("B) Avanza con supuestos:");
-      (assumptions.length ? assumptions : ["(No se requieren supuestos)"]).forEach(x=> diag.push(" - " + x));
-    } else {
-      diag.push("✅ Brief suficiente. Puedes ejecutar directo.");
-    }
-
-    return { strategy, risk, complexity, missing, text: diag.join("\n") };
+Tarea:
+Con el BRIEF, genera el index.html completo listo para GitHub Pages.`
+    ].join("");
   }
 
-  function buildBriefOperativo(d, diag){
-    const lines = [];
-    lines.push("OBJETIVO: " + d.objetivo);
-    lines.push("ENTREGABLE: " + (String(d.factory).toUpperCase().includes("CODE")
-      ? "Código ejecutable + instrucciones de uso"
-      : "Prompts/entregables listos para usar"));
-    lines.push("CONTEXTO: " + `${d.nicho} · ${d.marca} · ${d.ciudad}`);
-    lines.push("RESTRICCIONES: " + d.restricciones);
-    lines.push("CRITERIO DE ÉXITO: " + (
-      String(d.factory).toUpperCase().includes("CODE")
-        ? "Carga rápido, se ve profesional, CTA claro, y funciona sin backend."
-        : "Salida concreta, sin genérico, lista para usar sin re-escribir."
-    ));
-    lines.push("");
-    lines.push("DATOS:");
-    lines.push(`- IA destino: ${d.iaTarget}`);
-    lines.push(`- Nivel: ${d.nivel}`);
-    lines.push(`- Estilo: ${d.estilo}`);
-    lines.push(`- Servicios/features: ${d.servicios}`);
-    lines.push(`- WhatsApp (si aplica): ${d.wa}`);
-    lines.push("");
-    lines.push("MÓDULOS (si aplica):");
-    Object.entries(d.modules).forEach(([k,v])=>{
-      const name =
-        k==="wa"?"WhatsApp flotante":
-        k==="form"?"Formulario":
-        k==="agenda"?"Agenda":
-        k==="seo"?"SEO":
-        k==="legal"?"Legal":
-        k==="anim"?"Animaciones":
-        k==="media"?"Media (música/assets)":
-        "Bot guía";
-      lines.push(`- ${name}: ${yn(v)}`);
-    });
-    lines.push("");
-    lines.push("NOTAS AVANZADAS (OBLIGATORIO RESPETAR):");
-    lines.push(d.notas);
-    lines.push("");
-    lines.push("PROTOCOLO:");
-    lines.push(`- Diagnóstico: claridad=${diag.missing.length? "INCOMPLETO":"OK"} · complejidad=${diag.complexity} · riesgo=${diag.risk}`);
-    lines.push(`- Estrategia: ${diag.strategy}`);
-    return lines.join("\n");
+  function buildMeta(d){
+    const metaBrief =
+`=== META-BRIEF ===
+Objetivo: fabricar el mejor MASTER PROMPT para este proyecto y luego ejecutarlo.
+Destino: ${d.ia}
+Factory: ${d.factory}
+Restricciones: sin backend, sin frameworks, un solo index.html
+Calidad: estética premium + cero huecos
+
+=== PROJECT BRIEF ===
+Marca: ${d.marca}
+Ciudad: ${d.ciudad}
+Objetivo: ${d.objetivo}
+Servicios: ${d.servicios}
+WhatsApp: ${d.wa}
+Email: ${d.email}
+Notas: ${d.notas}`;
+
+    const metaPrompt =
+`=== META-PROMPT ===
+Tu rol: Arquitecto de prompts.
+1) Devuelve un MASTER PROMPT final (listo para pegar) que fuerce: estética premium, módulos completos, y cero huecos.
+2) Luego ejecuta el proyecto: entrega SOLO el index.html completo.
+Reglas:
+- Español
+- Sin backend / sin frameworks
+- WhatsApp con link real + mensaje prellenado
+- Form con validación front-end
+- Scroll reveal sin librerías
+- Smooth scroll
+- SEO básico + footer legal
+Salida en este orden:
+A) MASTER PROMPT
+B) index.html completo`;
+
+    return `${metaBrief}\n\n${metaPrompt}`;
   }
 
-  // ---------------- super prompts (3 variants) ----------------
-  function commonRules(d, diag){
-    const rules = [];
-    rules.push("REGLAS (NO NEGOCIABLE):");
-    rules.push("- Responde en español.");
-    rules.push("- Prohibido genérico: todo debe ser accionable y específico.");
-    rules.push("- Si falta un dato crítico: haz máximo 3 preguntas. Si no respondo, asume y declara supuestos.");
-    rules.push("- Entrega formato EXACTO solicitado. Sin rollo.");
-    rules.push("- Incluye checklist QA al final.");
-    rules.push("");
-    rules.push("CONTEXTO / NOTAS AVANZADAS (RESPETA):");
-    rules.push(d.notas);
-    rules.push("");
-    rules.push("ESTRATEGIA (AUTO): " + diag.strategy);
-    return rules.join("\n");
-  }
-
-  function promptCompact(d, brief, diag){
-    const lines = [];
-    lines.push("ROL: Eres un experto ejecutor (calidad agencia).");
-    lines.push("TAREA: Usa el BRIEF y entrega el RESULTADO final.");
-    lines.push("");
-    lines.push(commonRules(d, diag));
-    lines.push("");
-    lines.push("FORMATO DE SALIDA:");
-    if(String(d.factory).toUpperCase().includes("CODE")){
-      lines.push("1) Código completo (preferible 1 archivo si aplica).");
-      lines.push("2) Dónde editar: WhatsApp, email, imágenes, textos (con comentarios).");
-      lines.push("3) Checklist QA.");
-    } else if(String(d.factory).toUpperCase().includes("IMAGE")){
-      lines.push("1) 4 prompts listos + negativos + tamaños sugeridos.");
-      lines.push("2) Checklist QA.");
-    } else if(String(d.factory).toUpperCase().includes("VIDEO")){
-      lines.push("1) Guion (hook→valor→CTA) + storyboard simple + assets.");
-      lines.push("2) Caption + hashtags + CTA pantalla.");
-    } else {
-      lines.push("1) Flujo paso a paso (trigger→acciones→salidas) + pruebas.");
-      lines.push("2) Checklist QA.");
-    }
-    lines.push("");
-    lines.push("BRIEF:");
-    lines.push(brief);
-    return lines.join("\n");
-  }
-
-  function promptAgencia(d, brief, diag){
-    const lines = [];
-    lines.push("ROL: Director de entrega (Agencia). Tu output debe ser usable en 10 minutos.");
-    lines.push("");
-    lines.push("OBJETIVO: entregar un resultado que reduzca mi trabajo al mínimo (sin explicación larga).");
-    lines.push("");
-    lines.push(commonRules(d, diag));
-    lines.push("");
-    lines.push("REQUERIMIENTOS EXTRA (AGENCIA):");
-    lines.push("- Incluye estructura de contenido (H1/H2), CTA fuerte y tono acorde.");
-    lines.push("- Si es CODE: responsive + accesible básico + performance (sin librerías).");
-    lines.push("- Si hay módulos marcados: intégralos con placeholders claros.");
-    lines.push("- Señala exactamente QUÉ tocar y DÓNDE (líneas/IDs).");
-    lines.push("");
-    lines.push("SALIDA OBLIGATORIA (EN ESTE ORDEN):");
-    if(String(d.factory).toUpperCase().includes("CODE")){
-      lines.push("1) Código final completo (ideal 1 archivo).");
-      lines.push("2) Bloque 'CONFIG' al inicio (tel/email/brand).");
-      lines.push("3) Checklist QA.");
-      lines.push("4) Errores comunes + cómo arreglar.");
-    } else {
-      lines.push("1) Entregable final.");
-      lines.push("2) Checklist QA.");
-      lines.push("3) 3 mejoras opcionales (rápidas).");
-    }
-    lines.push("");
-    lines.push("BRIEF:");
-    lines.push(brief);
-    return lines.join("\n");
-  }
-
-  function promptCreativo(d, brief, diag){
-    const lines = [];
-    lines.push("ROL: Creativo brutal + ingeniero de precisión. Estilo: wow pero usable.");
-    lines.push("");
-    lines.push("OBJETIVO: elevar estética/impacto sin romper restricciones.");
-    lines.push("");
-    lines.push(commonRules(d, diag));
-    lines.push("");
-    lines.push("TRUCOS PERMITIDOS:");
-    lines.push("- Microinteracciones (hover, focus, reveal).");
-    lines.push("- Copy con punch (sin humo).");
-    lines.push("- Si notas mencionan música/locutor: intégralo como módulo opcional con placeholder.");
-    lines.push("");
-    lines.push("SALIDA:");
-    lines.push("- Entrega final + checklist QA + 2 variantes rápidas (A/B) en texto (solo ajustes).");
-    lines.push("");
-    lines.push("BRIEF:");
-    lines.push(brief);
-    return lines.join("\n");
-  }
-
-  // ---------------- code starter (optional) ----------------
-  function codeStarter(d){
-    if(!String(d.factory).toUpperCase().includes("CODE")) return "(No aplica: Factory no es CODE)";
-    const cfg = [];
-    cfg.push("// ===== CONFIG (EDITA SOLO AQUÍ) =====");
-    cfg.push(`const BRAND = ${JSON.stringify(d.marca)};`);
-    cfg.push(`const CITY = ${JSON.stringify(d.ciudad)};`);
-    cfg.push(`const WHATSAPP = ${JSON.stringify(d.wa)};`);
-    cfg.push(`const SERVICES = ${JSON.stringify(d.servicios)}.split(",").map(s=>s.trim()).filter(Boolean);`);
-    cfg.push(`const NOTES = ${JSON.stringify(d.notas)};`);
-    cfg.push("// ====================================");
-    const starter = [];
-    starter.push("<!-- STARTER: pega este esqueleto en tu IA junto con Prompt 2 (Agencia) -->");
-    starter.push("<!doctype html>");
-    starter.push("<html lang='es'>");
-    starter.push("<head>");
-    starter.push("  <meta charset='utf-8'/>");
-    starter.push("  <meta name='viewport' content='width=device-width,initial-scale=1'/>");
-    starter.push("  <title><!-- BRAND --></title>");
-    starter.push("  <meta name='description' content='<!-- DESCRIPCION -->'/>");
-    starter.push("  <style>/* TODO: CSS premium, responsive */</style>");
-    starter.push("</head>");
-    starter.push("<body>");
-    starter.push("  <!-- TODO: navbar + hero + secciones + footer legal -->");
-    starter.push("  <!-- TODO: WA flotante + form (mailto/WA) + reveal + smooth scroll -->");
-    starter.push("  <script>");
-    starter.push(cfg.join("\n"));
-    starter.push("  </script>");
-    starter.push("</body>");
-    starter.push("</html>");
-    return starter.join("\n");
-  }
-
-  // ---------------- generate ----------------
   function generate(){
-    const d = getData();
-    $("verTxt").textContent = d.version;
-
-    let diag = { strategy:"MANUAL", risk:"-", complexity:"-", missing:[], text:"MANUAL: sin protocolo." };
-    if(d.mode === "AUTO") diag = diagnose(d);
-
-    const brief = buildBriefOperativo(d, diag);
-
-    const p1 = promptCompact(d, brief, diag);
-    const p2 = promptAgencia(d, brief, diag);
-    const p3 = promptCreativo(d, brief, diag);
-
-    const c = (d.deliverMode === "PROMPT_PLUS_CODE") ? codeStarter(d) : "(Salida configurada: Solo prompts)";
-
-    OUT.diag = diag.text;
-    OUT.brief = brief;
-    OUT.p1 = p1;
-    OUT.p2 = p2;
-    OUT.p3 = p3;
-    OUT.code = c;
-
-    OUT.all = [
-      "=== DIAGNÓSTICO ===", OUT.diag,
-      "",
-      "=== BRIEF OPERATIVO ===", OUT.brief,
-      "",
-      "=== PROMPT 1 (COMPACTO) ===", OUT.p1,
-      "",
-      "=== PROMPT 2 (AGENCIA) ===", OUT.p2,
-      "",
-      "=== PROMPT 3 (CREATIVO) ===", OUT.p3,
-      "",
-      "=== CÓDIGO (STARTER) ===", OUT.code
-    ].join("\n");
-
-    // auto tab: en AUTO si faltan huecos -> Diagnóstico; si no -> Prompt 2
-    if(d.mode === "AUTO" && diag.missing.length) setTab("diag");
-    else setTab("p2");
+    const d = data();
+    const txt = MODE==="MASTER" ? buildMaster(d) : buildMeta(d);
+    out.textContent = txt;
+    hint.textContent = "✅ Generado. Ahora pégalo en tu IA y pide la salida (index.html).";
   }
 
-  // ---------------- presets ----------------
-  const KEY = "acs_prompt_factory_v20";
-  function savePreset(){
-    const d = getData();
-    localStorage.setItem(KEY, JSON.stringify(d));
-  }
-  function loadPreset(){
-    const raw = localStorage.getItem(KEY);
-    if(!raw) return;
-    const d = JSON.parse(raw);
-
-    const mapSel = ["factory","iaTarget","nicho","nivel","objetivo","estilo"];
-    mapSel.forEach(id=>{
-      const sel = $(id);
-      const custom = $(id+"_custom");
-      if(!sel) return;
-      const v = d[id];
-      // find
-      let found = false;
-      for(const opt of sel.options){
-        if(opt.value === v){ found = true; break; }
-      }
-      if(found){ sel.value = v; }
-      else { sel.value="__custom__"; if(custom) custom.value = v || ""; }
-      showCustom(id);
+  function copy(){
+    navigator.clipboard.writeText(out.textContent).then(()=>{
+      hint.textContent = "📋 Copiado al portapapeles.";
+    }).catch(()=>{
+      hint.textContent = "No se pudo copiar. Selecciona el texto y copia manual.";
     });
-
-    $("marca").value = d.marca || "";
-    $("ciudad").value = d.ciudad || "";
-    $("wa").value = d.wa || "";
-    $("servicios").value = d.servicios || "";
-    $("restricciones").value = d.restricciones || "";
-    $("notas").value = d.notas || "";
-
-    $("deliverMode").value = d.deliverMode || "PROMPT_ONLY";
-
-    $("mWa").checked = !!d.modules?.wa;
-    $("mForm").checked = !!d.modules?.form;
-    $("mAgenda").checked = !!d.modules?.agenda;
-    $("mSeo").checked = !!d.modules?.seo;
-    $("mLegal").checked = !!d.modules?.legal;
-    $("mAnim").checked = !!d.modules?.anim;
-    $("mMedia").checked = !!d.modules?.media;
-    $("mExplainBot").checked = !!d.modules?.explainBot;
-
-    setMode(d.mode === "MANUAL" ? "MANUAL" : "AUTO");
   }
 
-  // ---------------- copy ----------------
-  function copyText(txt){
-    navigator.clipboard.writeText(txt).catch(()=>{});
+  function test(){
+    // prueba visible para ti: si esto cambia, el JS sí está vivo
+    hint.textContent = "✅ TEST OK: el JavaScript está funcionando en esta página.";
   }
 
-  // ---------------- init ----------------
-  function init(){
-    ["factory","iaTarget","nicho","nivel","objetivo","estilo"].forEach(wireCustom);
+  $("mMaster").addEventListener("click", ()=>setMode("MASTER"));
+  $("mMeta").addEventListener("click", ()=>setMode("META"));
+  $("gen").addEventListener("click", generate);
+  $("copy").addEventListener("click", copy);
+  $("test").addEventListener("click", test);
 
-    $("modeAuto").addEventListener("click", ()=> setMode("AUTO"));
-    $("modeManual").addEventListener("click", ()=> setMode("MANUAL"));
-
-    $("btnGen").addEventListener("click", generate);
-    $("btnSave").addEventListener("click", ()=>{ savePreset(); });
-    $("btnLoad").addEventListener("click", ()=>{ loadPreset(); generate(); });
-    $("btnReset").addEventListener("click", ()=> location.reload());
-
-    // tabs
-    $("tabs").addEventListener("click", (e)=>{
-      const t = e.target.closest(".tab");
-      if(!t) return;
-      setTab(t.dataset.tab);
-    });
-
-    $("copyActive").addEventListener("click", ()=> copyText(OUT[ACTIVE_TAB] || $("outPre").textContent));
-    $("copyAll").addEventListener("click", ()=> copyText(OUT.all || $("outPre").textContent));
-
-    // dialogs
-    $("openGuide").addEventListener("click", ()=> $("dlgGuide").showModal());
-    $("closeGuide").addEventListener("click", ()=> $("dlgGuide").close());
-    $("botBtn").addEventListener("click", ()=> $("dlgBot").showModal());
-    $("closeBot").addEventListener("click", ()=> $("dlgBot").close());
-
-    // logo
-    $("btnLogo").addEventListener("click", ()=> $("logoFile").click());
-    $("logoFile").addEventListener("change", (e)=>{
-      const f = e.target.files?.[0];
-      if(!f) return;
-      const r = new FileReader();
-      r.onload = ()=>{
-        $("logoBox").style.backgroundImage = `url('${r.result}')`;
-        $("logoBox").style.backgroundSize = "cover";
-        $("logoBox").style.backgroundPosition = "center";
-      };
-      r.readAsDataURL(f);
-    });
-
-    setMode("AUTO");
-  }
-  init();
+  setMode("MASTER");
+})();
 </script>
 </body>
 </html>
